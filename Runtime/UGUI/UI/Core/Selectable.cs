@@ -1204,8 +1204,8 @@ namespace UnityEngine.UI
                 return;
 
             // Selection tracking
-            if (IsInteractable() && navigation.mode != Navigation.Mode.None && EventSystem.current != null)
-                EventSystem.current.SetSelectedGameObject(gameObject, eventData);
+            //if (IsInteractable() && navigation.mode != Navigation.Mode.None && EventSystem.current != null)
+            //    EventSystem.current.SetSelectedGameObject(gameObject, eventData);
 
             isPointerDown = true;
             EvaluateAndTransitionToSelectionState();
