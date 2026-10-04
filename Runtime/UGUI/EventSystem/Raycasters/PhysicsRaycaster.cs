@@ -7,7 +7,6 @@ namespace UnityEngine.EventSystems
     /// Simple event system using physics raycasts.
     /// </summary>
     [AddComponentMenu("Event/Physics Raycaster")]
-    [RequireComponent(typeof(Camera))]
     [UGUIHelpURL("PhysicsRaycaster")]
     /// <summary>
     /// Raycaster for casting against 3D Physics components.
@@ -49,9 +48,9 @@ namespace UnityEngine.EventSystems
                     m_EventCamera = GetComponent<Camera>();
 
                 if (m_EventCamera == null)
-                    return Camera.main;
+                    m_EventCamera = Camera.main;
 
-                return m_EventCamera ;
+                return m_EventCamera;
             }
         }
 
