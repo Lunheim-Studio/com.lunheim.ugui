@@ -131,13 +131,19 @@ namespace UnityEngine.EventSystems
         public void UpdateModules()
         {
             GetComponents(m_SystemInputModules);
-            var systemInputModulesCount = m_SystemInputModules.Count;
-            for (int i = systemInputModulesCount - 1; i >= 0; i--)
+
+            for (var i = m_SystemInputModules.Count - 1; i >= 0; i--)
             {
                 if (m_SystemInputModules[i] && m_SystemInputModules[i].IsActive())
                     continue;
 
                 m_SystemInputModules.RemoveAt(i);
+            }
+
+            if (m_CurrentInputModule != null &&
+                !m_SystemInputModules.Contains(m_CurrentInputModule))
+            {
+                ChangeEventModule(null);
             }
         }
 
