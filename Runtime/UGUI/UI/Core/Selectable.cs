@@ -520,6 +520,7 @@ namespace UnityEngine.UI
             s_SelectableCount++;
             isPointerDown = false;
             m_GroupsAllowInteraction = ParentGroupAllowsInteraction();
+            m_NavigationGroup = FindNavigationGroup();
             DoStateTransition(currentSelectionState, true);
 
             m_EnableCalled = true;
@@ -531,6 +532,7 @@ namespace UnityEngine.UI
 
             // If our parenting changes figure out if we are under a new CanvasGroup.
             OnCanvasGroupChanged();
+            m_NavigationGroup = null;
         }
 
         private void OnSetProperty()
@@ -742,6 +744,32 @@ namespace UnityEngine.UI
         }
 
         // Selection logic
+        private NavigationGroup m_NavigationGroup;
+        public NavigationGroup navigationGroup
+        {
+            get
+            {
+                if (m_NavigationGroup == null)
+                    m_NavigationGroup = FindNavigationGroup();
+
+                return m_NavigationGroup;
+            }
+        }
+
+        private NavigationGroup FindNavigationGroup()
+        {
+            Transform current = transform;
+
+            while (current != null)
+            {
+                if (current.TryGetComponent<NavigationGroup>(out var scope))
+                    return scope;
+
+                current = current.parent;
+            }
+
+            return null;
+        }
 
         /// <summary>
         /// Finds the selectable object next to this one.
@@ -777,6 +805,10 @@ namespace UnityEngine.UI
         /// </example>
         public Selectable FindSelectable(Vector3 dir)
         {
+            var group = navigationGroup;
+            if (group == null || !group.isActiveAndEnabled)
+                return null;
+
             dir = dir.normalized;
             Vector3 localDir = Quaternion.Inverse(transform.rotation) * dir;
             Vector3 pos = transform.TransformPoint(GetPointOnRectEdge(transform as RectTransform, localDir));
@@ -794,6 +826,9 @@ namespace UnityEngine.UI
                 Selectable sel = s_Selectables[i];
 
                 if (sel == this)
+                    continue;
+
+                if (!group.IsNavigable(sel.navigationGroup))
                     continue;
 
                 if (!sel.IsInteractable() || sel.navigation.mode == Navigation.Mode.None)
@@ -856,9 +891,18 @@ namespace UnityEngine.UI
                 }
             }
 
-            if (wantsWrapAround && null == bestPick) return bestFurthestPick;
+            var candidate = bestPick;
+            if (candidate == null && wantsWrapAround)
+                candidate = bestFurthestPick;
 
-            return bestPick;
+            if (candidate == null)
+                return null;
+
+            var targetGroup = candidate.navigationGroup;
+            if (targetGroup != group)
+                return targetGroup.ResolveEntry(candidate);
+
+            return candidate;
         }
 
         private static Vector3 GetPointOnRectEdge(RectTransform rect, Vector2 dir)
@@ -875,7 +919,10 @@ namespace UnityEngine.UI
         void Navigate(AxisEventData eventData, Selectable sel)
         {
             if (sel != null && sel.IsActive())
+            {
                 eventData.selectedObject = sel.gameObject;
+                eventData.Use();
+            }
         }
 
         /// <summary>
