@@ -191,6 +191,11 @@ namespace UnityEngine.EventSystems
             ExecuteEvents.Execute(m_CurrentSelected, pointer, ExecuteEvents.deselectHandler);
             m_CurrentSelected = selected;
             ExecuteEvents.Execute(m_CurrentSelected, pointer, ExecuteEvents.selectHandler);
+
+            var focused = composition.focused;
+            if (focused && m_CurrentSelected)
+                focused.lastSelected = m_CurrentSelected;
+
             m_SelectionGuard = false;
         }
 
