@@ -120,6 +120,13 @@ namespace UnityEngine.EventSystems
             handler.OnDeselect(eventData);
         }
 
+        private static readonly EventFunction<IDescendantSelectedHandler> s_DescendantSelectedHandler = Execute;
+
+        private static void Execute(IDescendantSelectedHandler handler, BaseEventData eventData)
+        {
+            handler.OnDescendantSelected(eventData);
+        }
+
         private static readonly EventFunction<IMoveHandler> s_MoveHandler = Execute;
 
         private static void Execute(IMoveHandler handler, BaseEventData eventData)
@@ -216,6 +223,11 @@ namespace UnityEngine.EventSystems
             get { return s_DeselectHandler; }
         }
 
+        public static EventFunction<IDescendantSelectedHandler> descendentSelectedHandler
+        {
+            get { return s_DescendantSelectedHandler; }
+        }
+
         public static EventFunction<IMoveHandler> moveHandler
         {
             get { return s_MoveHandler; }
@@ -299,6 +311,35 @@ namespace UnityEngine.EventSystems
                     return transform.gameObject;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Execute the specified event on all ancestors of the root,
+        /// starting from its immediate parent.
+        /// </summary>
+        public static void ExecuteAncestors<T>(GameObject root, BaseEventData eventData, EventFunction<T> callbackFunction) where T : IEventSystemHandler
+        {
+            if (root == null)
+                return;
+
+            var chain = ListPool<Transform>.Get();
+
+            try
+            {
+                GetEventChain(root, chain);
+
+                for (var i = 1; i < chain.Count; i++)
+                {
+                    var transform = chain[i];
+
+                    if (transform != null)
+                        Execute(transform.gameObject, eventData, callbackFunction);
+                }
+            }
+            finally
+            {
+                ListPool<Transform>.Release(chain);
+            }
         }
 
         private static bool ShouldSendToComponent<T>(Component component) where T : IEventSystemHandler

@@ -361,6 +361,17 @@ namespace UnityEngine.EventSystems
     }
 
     /// <summary>
+    /// Interface to implement if you wish to receive OnDescendantSelected callbacks.
+    /// </summary>
+    /// <remarks>
+    /// Criteria for this event is implementation dependent. For example see StandAloneInputModule.
+    /// </remarks>
+    public interface IDescendantSelectedHandler : IEventSystemHandler
+    {
+        void OnDescendantSelected(BaseEventData eventData);
+    }
+
+    /// <summary>
     /// Interface to implement if you wish to receive OnMove callbacks.
     /// </summary>
     /// <remarks>
