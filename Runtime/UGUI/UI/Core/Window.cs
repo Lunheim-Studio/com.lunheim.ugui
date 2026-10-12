@@ -5,6 +5,7 @@ using UnityEngine.EventSystems;
 namespace UnityEngine.UI
 {
     [AddComponentMenu("UI (Canvas)/Window")]
+    [RequireComponent(typeof(RectTransform))]
     public class Window : EventBehaviour
     {
         private readonly List<CanvasGroup> m_CanvasGroupCache = new();
