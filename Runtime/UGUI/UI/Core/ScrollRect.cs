@@ -16,7 +16,7 @@ namespace UnityEngine.UI
     /// <remarks>
     /// ScrollRect will not do any clipping on its own. Combined with a Mask component, it can be turned into a scroll view.
     /// </remarks>
-    public class ScrollRect : UIBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IScrollHandler, ICanvasElement, ILayoutElement, ILayoutGroup
+    public class ScrollRect : UIBehaviour, IInitializePotentialDragHandler, IBeginDragHandler, IEndDragHandler, IDragHandler, IScrollHandler, IDescendantSelectedHandler, ICanvasElement, ILayoutElement, ILayoutGroup
     {
         /// <summary>
         /// A setting for which behavior to use when content moves beyond the confines of its container.
@@ -1455,7 +1455,126 @@ namespace UnityEngine.UI
         {
             SetDirtyCaching();
         }
+#endif
 
-        #endif
+        #region Selection Scrolling
+        [SerializeField]
+        private bool m_AutoScrollOnSelection = true;
+
+        public bool autoScrollOnSelection
+        {
+            get => m_AutoScrollOnSelection;
+            set => m_AutoScrollOnSelection = value;
+        }
+
+        public virtual void OnDescendantSelected(BaseEventData eventData)
+        {
+            if (!m_AutoScrollOnSelection || !IsActive() || !m_Content)
+                return;
+
+            var target = eventData.selectedObject;
+
+            if (!target ||
+                target.transform is not RectTransform selected ||
+                !selected.IsChildOf(m_Content))
+                return;
+
+            ScrollSelectionIntoView(selected);
+        }
+
+        private void ScrollSelectionIntoView(RectTransform selected)
+        {
+            UpdateBounds();
+
+            selected.GetWorldCorners(m_Corners);
+
+            var matrix = viewRect.worldToLocalMatrix;
+            var selectedBounds = InternalGetBounds(m_Corners, ref matrix);
+
+            var view = m_ViewBounds;
+            var content = m_ContentBounds;
+
+            var overflowX = content.size.x - view.size.x;
+            var overflowY = content.size.y - view.size.y;
+
+            var deltaX = m_Horizontal && overflowX > Mathf.Epsilon
+                ? GetSelectionScrollDelta(
+                    selectedBounds.min.x,
+                    selectedBounds.max.x,
+                    view.min.x,
+                    view.max.x)
+                : 0f;
+
+            var deltaY = m_Vertical && overflowY > Mathf.Epsilon
+                ? GetSelectionScrollDelta(
+                    selectedBounds.min.y,
+                    selectedBounds.max.y,
+                    view.min.y,
+                    view.max.y)
+                : 0f;
+
+            bool moveX = Mathf.Abs(deltaX) > 0.01f;
+            bool moveY = Mathf.Abs(deltaY) > 0.01f;
+
+            if (!moveX && !moveY)
+                return;
+
+            float nextX = 0f;
+            float nextY = 0f;
+
+            if (moveX)
+            {
+                var current = (view.min.x - content.min.x) / overflowX;
+                nextX = Mathf.Clamp01(current + deltaX / overflowX);
+                moveX = !Mathf.Approximately(current, nextX);
+            }
+
+            if (moveY)
+            {
+                var current = (view.min.y - content.min.y) / overflowY;
+                nextY = Mathf.Clamp01(current + deltaY / overflowY);
+                moveY = !Mathf.Approximately(current, nextY);
+            }
+
+            if (!moveX && !moveY)
+                return;
+
+            StopMovement();
+
+            if (moveX)
+                SetNormalizedPosition(nextX, 0);
+
+            if (moveY)
+                SetNormalizedPosition(nextY, 1);
+        }
+
+        private static float GetSelectionScrollDelta(
+            float selectedMin,
+            float selectedMax,
+            float viewportMin,
+            float viewportMax)
+        {
+            var selectedSize = selectedMax - selectedMin;
+            var viewportSize = viewportMax - viewportMin;
+
+            if (selectedSize > viewportSize)
+            {
+                var toMin = selectedMin - viewportMin;
+                var toMax = selectedMax - viewportMax;
+
+                return Mathf.Abs(toMin) < Mathf.Abs(toMax)
+                    ? toMin
+                    : toMax;
+            }
+
+            if (selectedMax > viewportMax)
+                return selectedMax - viewportMax;
+
+            if (selectedMin < viewportMin)
+                return selectedMin - viewportMin;
+
+            return 0f;
+        }
+        #endregion
     }
 }
