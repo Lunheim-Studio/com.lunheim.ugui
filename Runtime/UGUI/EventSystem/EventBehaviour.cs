@@ -19,6 +19,29 @@ namespace UnityEngine.EventSystems
             m_EventSystem = null;
         }
 
+        private bool m_Focused = false;
+        public bool focused
+        {
+            get { return m_Focused; }
+        }
+
+        internal void OnFocusedInternal()
+        {
+            if (m_Focused) return;
+            m_Focused = true;
+            OnFocused();
+        }
+
+        internal void OnUnfocusedInternal()
+        {
+            if (!m_Focused) return;
+            m_Focused = false;
+            OnUnfocused();
+        }
+
+        protected virtual void OnFocused() { }
+        protected virtual void OnUnfocused() { }
+
         public abstract bool IsInteractable();
 
         [SerializeField]

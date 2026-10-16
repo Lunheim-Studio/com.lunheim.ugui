@@ -122,12 +122,12 @@ namespace UnityEngine.EventSystems
             get { return m_HasFocus; }
         }
 
-        private EventSystemComposition m_Composition;
+        private EventComposition m_Composition;
 
         /// <summary>
         /// Current event system/view composition. This is used to determine which view is currently focused/on top and should receive events.
         /// </summary>
-        public EventSystemComposition composition
+        public EventComposition composition
         {
             get { return m_Composition; }
         }

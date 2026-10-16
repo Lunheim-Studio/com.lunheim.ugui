@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace UnityEngine.EventSystems
 {
-    public sealed class EventSystemComposition
+    public sealed class EventComposition
     {
         private readonly List<EventBehaviour> _elements = new();
         private readonly Dictionary<EventBehaviour, int> _order = new();
@@ -85,14 +85,14 @@ namespace UnityEngine.EventSystems
                         // Both properties describe the same focus state in callbacks.
                         m_Focused = nextView;
 
-                        /*if (previousView != null)
-                            previousView.OnUnfocusedInternal();*/
+                        if (previousView != null)
+                            previousView.OnUnfocusedInternal();
 
                         // OnUnfocused may have removed or replaced the incoming view.
                         m_Focused = SortTopmost();
 
-                        /*if (m_Focused != null)
-                            m_Focused.OnFocusedInternal();*/
+                        if (m_Focused != null)
+                            m_Focused.OnFocusedInternal();
 
                         continue;
                     }
