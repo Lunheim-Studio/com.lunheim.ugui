@@ -26,6 +26,24 @@ namespace UnityEngine.UI
         private bool m_EnableCalled = false;
 
         /// <summary>
+        /// Raised when a pointer enters an active selectable.
+        /// </summary>
+        public static event Action<Selectable> Hovered;
+
+        /// <summary>
+        /// Raised when an active selectable receives selection,
+        /// including programmatic selection.
+        /// </summary>
+        public static event Action<Selectable> Selected;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetInteractionEvents()
+        {
+            Hovered = null;
+            Selected = null;
+        }
+
+        /// <summary>
         /// Copy of the array of all the selectable objects currently active in the scene.
         /// </summary>
         /// <example>
@@ -1319,8 +1337,12 @@ namespace UnityEngine.UI
         /// </example>
         public virtual void OnPointerEnter(PointerEventData eventData)
         {
+            bool wasPointerInside = isPointerInside;
             isPointerInside = true;
             EvaluateAndTransitionToSelectionState();
+
+            if (!wasPointerInside && IsActive())
+                Hovered?.SafeInvoke(this);
         }
 
         /// <summary>
@@ -1375,8 +1397,12 @@ namespace UnityEngine.UI
         /// </example>
         public virtual void OnSelect(BaseEventData eventData)
         {
+            bool wasSelected = hasSelection;
             hasSelection = true;
             EvaluateAndTransitionToSelectionState();
+
+            if (!wasSelected && IsActive())
+                Selected?.SafeInvoke(this);
         }
 
         /// <summary>

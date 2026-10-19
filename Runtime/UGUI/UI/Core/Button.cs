@@ -24,6 +24,17 @@ namespace UnityEngine.UI
         [SerializeField]
         private ButtonClickedEvent m_OnClick = new ButtonClickedEvent();
 
+        /// <summary>
+        /// Raised when a Button is pressed.
+        /// </summary>
+        public static event Action<Selectable> Pressed;
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetInteractionEvents()
+        {
+            Pressed = null;
+        }
+
         protected Button()
         {}
 
@@ -69,6 +80,7 @@ namespace UnityEngine.UI
 
             UISystemProfilerApi.AddMarker("Button.onClick", this);
             m_OnClick.Invoke();
+            Pressed?.SafeInvoke(this);
         }
 
         /// <summary>
