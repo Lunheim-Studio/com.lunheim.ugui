@@ -304,6 +304,29 @@ namespace UnityEngine.EventSystems
         }
 
         /// <summary>
+        /// Raycast into the scene using only the configured raycasters of type T.
+        /// </summary>
+        /// <typeparam name="T">The raycaster type to use, for example GraphicRaycaster.</typeparam>
+        /// <param name="eventData">Current pointer data.</param>
+        /// <param name="raycastResults">List of 'hits' to populate.</param>
+        public void RaycastAll<T>(PointerEventData eventData, List<RaycastResult> raycastResults) where T : BaseRaycaster
+        {
+            raycastResults.Clear();
+            var modules = RaycasterManager.GetRaycasters();
+            var modulesCount = modules.Count;
+            for (int i = 0; i < modulesCount; ++i)
+            {
+                var module = modules[i] as T;
+                if (module == null || !module.IsActive())
+                    continue;
+
+                module.Raycast(eventData, raycastResults);
+            }
+
+            raycastResults.Sort(s_RaycastComparer);
+        }
+
+        /// <summary>
         /// Is the pointer with the given ID over an EventSystem object?
         /// </summary>
         public bool IsPointerOverGameObject()
