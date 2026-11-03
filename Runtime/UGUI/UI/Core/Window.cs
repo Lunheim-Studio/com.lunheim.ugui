@@ -12,6 +12,21 @@ namespace UnityEngine.UI
 
         private bool m_GroupsAllowInteraction = true;
 
+        public bool isOpen
+        {
+            get { return isActiveAndEnabled; }
+        }
+
+        public virtual void Open()
+        {
+            gameObject.SetActive(true);
+        }
+
+        public virtual void Close()
+        {
+            gameObject.SetActive(false);
+        }
+
         public override bool IsInteractable()
         {
             return m_GroupsAllowInteraction;
