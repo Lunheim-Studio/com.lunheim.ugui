@@ -122,7 +122,7 @@ namespace UnityEngine.EventSystems
             get { return m_HasFocus; }
         }
 
-        private EventComposition m_Composition;
+        private readonly EventComposition m_Composition = new();
 
         /// <summary>
         /// Current event system/view composition. This is used to determine which view is currently focused/on top and should receive events.
@@ -450,12 +450,6 @@ namespace UnityEngine.EventSystems
                 eventSystem.uiToolkitInterop.handlerTypes = createPanelGameObjectsOnStart ? (UIToolkitInteroperabilityBridge.EventHandlerTypes)~0 : 0;
             }
 #endif
-        }
-
-        protected override void Awake()
-        {
-            base.Awake();
-            m_Composition = new();
         }
 
         protected override void OnEnable()
