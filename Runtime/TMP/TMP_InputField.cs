@@ -4521,6 +4521,8 @@ namespace TMPro
             // Prevent UI navigation while text is being edited.
             if (!m_AllowInput)
                 base.OnMove(eventData);
+            else
+                eventData.Use();
         }
 
         //public virtual void OnLostFocus(BaseEventData eventData)

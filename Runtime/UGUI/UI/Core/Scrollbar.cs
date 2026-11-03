@@ -451,25 +451,37 @@ namespace UnityEngine.UI
             {
                 case MoveDirection.Left:
                     if (axis == Axis.Horizontal && FindSelectableOnLeft() == null)
+                    {
                         Set(Mathf.Clamp01(reverseValue ? value + stepSize : value - stepSize));
+                        eventData.Use();
+                    }
                     else
                         base.OnMove(eventData);
                     break;
                 case MoveDirection.Right:
                     if (axis == Axis.Horizontal && FindSelectableOnRight() == null)
+                    {
                         Set(Mathf.Clamp01(reverseValue ? value - stepSize : value + stepSize));
+                        eventData.Use();
+                    }
                     else
                         base.OnMove(eventData);
                     break;
                 case MoveDirection.Up:
                     if (axis == Axis.Vertical && FindSelectableOnUp() == null)
+                    {
                         Set(Mathf.Clamp01(reverseValue ? value - stepSize : value + stepSize));
+                        eventData.Use();
+                    }
                     else
                         base.OnMove(eventData);
                     break;
                 case MoveDirection.Down:
                     if (axis == Axis.Vertical && FindSelectableOnDown() == null)
+                    {
                         Set(Mathf.Clamp01(reverseValue ? value + stepSize : value - stepSize));
+                        eventData.Use();
+                    }
                     else
                         base.OnMove(eventData);
                     break;
