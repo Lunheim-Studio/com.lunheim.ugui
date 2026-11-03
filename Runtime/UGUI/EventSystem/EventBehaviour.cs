@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using UnityEngine.UI;
+
 namespace UnityEngine.EventSystems
 {
     public abstract class EventBehaviour : MonoBehaviour
@@ -60,11 +63,10 @@ namespace UnityEngine.EventSystems
         }
 
         [SerializeField]
-        private GameObject m_FallbackSelection;
-        public GameObject fallbackSelection
+        private List<SelectionRule> m_SelectionRules = new();
+        public List<SelectionRule> selectionRules
         {
-            get { return m_FallbackSelection; }
-            set { m_FallbackSelection = value; }
+            get { return m_SelectionRules; }
         }
 
         private GameObject m_LastSelected;
@@ -76,9 +78,85 @@ namespace UnityEngine.EventSystems
 
         protected virtual GameObject GetDefaultSelection()
         {
-            return m_FallbackSelection;
+            return null;
         }
 
-        public abstract GameObject GetSelection();
+        public virtual GameObject GetSelection()
+        {
+            if (!IsInteractable())
+                return null;
+
+            if (m_RememberSelection && IsValidSelection(m_LastSelected))
+                return m_LastSelected;
+
+            var selection = GetDefaultSelection();
+            if (IsValidSelection(selection))
+                return selection;
+
+            for (int i = 0; i < m_SelectionRules.Count; i++)
+            {
+                selection = ResolveRule(m_SelectionRules[i]);
+                if (selection)
+                    return selection;
+            }
+
+            return null;
+        }
+
+        protected virtual bool IsValidSelection(GameObject target)
+        {
+            if (!target || !target.activeInHierarchy)
+                return false;
+
+            if (!target.TryGetComponent<Selectable>(out var selectable))
+                return false;
+
+            return selectable.IsActive()
+                && selectable.IsInteractable();
+        }
+
+        private static readonly List<Selectable> s_SelectableCache = new();
+
+        private GameObject ResolveRule(SelectionRule rule)
+        {
+            var target = rule.target;
+            if (!target)
+                return null;
+
+            switch (rule.type)
+            {
+                case SelectionRule.Type.Select:
+                    return IsValidSelection(target) ? target : null;
+                case SelectionRule.Type.FirstIn:
+                    return FindSelectionIn(target, false);
+                case SelectionRule.Type.LastIn:
+                    return FindSelectionIn(target, true);
+                default:
+                    return null;
+            }
+        }
+
+        private GameObject FindSelectionIn(GameObject root, bool last)
+        {
+            if (!root.activeInHierarchy)
+                return null;
+
+            root.GetComponentsInChildren(false, s_SelectableCache);
+
+            GameObject selection = null;
+            int count = s_SelectableCache.Count;
+            for (int i = 0; i < count; i++)
+            {
+                var candidate = s_SelectableCache[last ? count - 1 - i : i].gameObject;
+                if (IsValidSelection(candidate))
+                {
+                    selection = candidate;
+                    break;
+                }
+            }
+
+            s_SelectableCache.Clear();
+            return selection;
+        }
     }
 }

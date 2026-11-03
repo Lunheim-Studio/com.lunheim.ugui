@@ -32,36 +32,6 @@ namespace UnityEngine.UI
             return m_GroupsAllowInteraction;
         }
 
-        public override GameObject GetSelection()
-        {
-            if (!IsInteractable())
-                return null;
-
-            if (rememberSelection && IsValidSelection(lastSelected))
-                return lastSelected;
-
-            var selection = GetDefaultSelection();
-
-            if (IsValidSelection(selection))
-                return selection;
-
-            return IsValidSelection(fallbackSelection)
-                ? fallbackSelection
-                : null;
-        }
-
-        protected virtual bool IsValidSelection(GameObject target)
-        {
-            if (!target || !target.activeInHierarchy)
-                return false;
-
-            if (!target.TryGetComponent<Selectable>(out var selectable))
-                return false;
-
-            return selectable.IsActive()
-                && selectable.IsInteractable();
-        }
-
         protected override void OnEnable()
         {
             m_GroupsAllowInteraction = ParentGroupAllowsInteraction();
