@@ -63,6 +63,8 @@ namespace TMPro
             private Sprite m_Image;
             [SerializeField]
             private Color m_Color = Color.white;
+            [SerializeField]
+            private TMP_FontAsset m_Font;
 
             /// <summary>
             /// The text associated with the option.
@@ -78,6 +80,12 @@ namespace TMPro
             /// The color associated with the option.
             /// </summary>
             public Color color { get { return m_Color; } set { m_Color = value; } }
+
+            /// <summary>
+            /// The font the option's text is drawn in, in the list and in the caption while it is selected,
+            /// e.g. a language's own font in a language picker. Null keeps the label's font.
+            /// </summary>
+            public TMP_FontAsset font { get { return m_Font; } set { m_Font = value; } }
 
             public OptionData() { }
 
@@ -151,6 +159,8 @@ namespace TMPro
         // Text to be used as a caption for the current value. It's not required, but it's kept here for convenience.
         [SerializeField]
         private TMP_Text m_CaptionText;
+
+        private TMP_FontAsset m_CaptionFontBeforeOptionFont;
 
         /// <summary>
         /// The Text component to hold the text of the currently selected option.
@@ -513,6 +523,22 @@ namespace TMPro
         /// <remarks>
         /// If you have modified the list of options, you should call this method afterwards to ensure that the visual state of the dropdown corresponds to the updated options.
         /// </remarks>
+        private void RefreshCaptionFont(TMP_FontAsset optionFont)
+        {
+            if (optionFont != null)
+            {
+                if (m_CaptionFontBeforeOptionFont == null)
+                    m_CaptionFontBeforeOptionFont = m_CaptionText.font;
+
+                m_CaptionText.font = optionFont;
+            }
+            else if (m_CaptionFontBeforeOptionFont != null)
+            {
+                m_CaptionText.font = m_CaptionFontBeforeOptionFont;
+                m_CaptionFontBeforeOptionFont = null;
+            }
+        }
+
         public void RefreshShownValue()
         {
             OptionData data = s_NoOptionData;
@@ -543,6 +569,8 @@ namespace TMPro
                     m_CaptionText.text = data.text;
                 else
                     m_CaptionText.text = "";
+
+                RefreshCaptionFont(data != null ? data.font : null);
             }
 
             if (m_CaptionImage)
@@ -1154,7 +1182,12 @@ namespace TMPro
 
             // Set the item's data
             if (item.text)
+            {
                 item.text.text = data.text;
+
+                if (data.font != null)
+                    item.text.font = data.font;
+            }
 
             if (item.image)
             {
