@@ -315,6 +315,7 @@ namespace TMPro
         [NonSerialized]
         protected Mesh m_Mesh;
         private bool m_AllowInput = false;
+        private EventComposition m_EditingComposition;
         //bool m_HasLostFocus = false;
         private bool m_ShouldActivateNextUpdate = false;
         private bool m_UpdateDrag = false;
@@ -4373,6 +4374,12 @@ namespace TMPro
                 OnFocus();
             }
 
+            if (m_EditingComposition == null)
+            {
+                m_EditingComposition = EventSystem.current.composition;
+                m_EditingComposition.BeginEditingText();
+            }
+
             m_AllowInput = true;
             m_OriginalText = text;
             m_WasCanceled = false;
@@ -4428,6 +4435,9 @@ namespace TMPro
 
             m_HasDoneFocusTransition = false;
             m_AllowInput = false;
+
+            m_EditingComposition?.EndEditingText();
+            m_EditingComposition = null;
 
             if (m_Placeholder != null)
                 m_Placeholder.enabled = string.IsNullOrEmpty(m_Text);

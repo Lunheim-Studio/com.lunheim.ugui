@@ -120,5 +120,25 @@ namespace UnityEngine.EventSystems
         }
 
         public event Action<EventBehaviour> focusedChanged;
+
+        private int m_TextEditors;
+        public bool isEditingText
+        {
+            get { return m_TextEditors > 0; }
+        }
+
+        public event Action<bool> editingTextChanged;
+
+        public void BeginEditingText()
+        {
+            if (m_TextEditors++ == 0)
+                editingTextChanged?.Invoke(true);
+        }
+
+        public void EndEditingText()
+        {
+            if (--m_TextEditors == 0)
+                editingTextChanged?.Invoke(false);
+        }
     }
 }
